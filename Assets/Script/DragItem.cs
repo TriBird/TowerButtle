@@ -9,6 +9,7 @@ using System.Reflection;
 public class DragItem: MonoBehaviour, IDragHandler, IEndDragHandler, IBeginDragHandler{
 
 	public GameMaster master;
+	public int itemindex = -1;
 
 	private Transform LastTriggered_Trans = null;
 	private bool isDropEnable = false;
@@ -37,6 +38,9 @@ public class DragItem: MonoBehaviour, IDragHandler, IEndDragHandler, IBeginDragH
 			return;
 		}
 
+		master.ItemGetHundler(itemindex);
+
+		transform.GetComponent<PolygonCollider2D>().isTrigger = false;
 		transform.GetComponent<Rigidbody2D>().constraints = RigidbodyConstraints2D.None;
 		isDropEnable = true;
 
