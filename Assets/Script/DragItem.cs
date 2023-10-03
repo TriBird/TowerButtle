@@ -8,6 +8,8 @@ using System.Reflection;
 
 public class DragItem: MonoBehaviour, IDragHandler, IEndDragHandler, IBeginDragHandler{
 
+	public GameMaster master;
+
 	private Transform LastTriggered_Trans = null;
 	private bool isDropEnable = false;
 	private Vector3 beforeDragPosition = new Vector3();
@@ -37,6 +39,21 @@ public class DragItem: MonoBehaviour, IDragHandler, IEndDragHandler, IBeginDragH
 
 		transform.GetComponent<Rigidbody2D>().constraints = RigidbodyConstraints2D.None;
 		isDropEnable = true;
+
+		StartCoroutine(StopAudit());
+	}
+
+	public IEnumerator StopAudit(){
+		while(true){
+			yield return new WaitForSeconds(0.5f);
+
+			float vel = transform.GetComponent<Rigidbody2D>().velocity.magnitude;
+
+			if (vel < 0.001){
+				master.StatusAdder_ATK(1);
+				yield break;
+			}
+		}
 	}
 
 	public void OnTriggerEnter2D(Collider2D other){
