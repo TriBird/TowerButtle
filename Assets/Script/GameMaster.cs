@@ -9,6 +9,8 @@ public class GameMaster: MonoBehaviour{
 	public GameObject Damage_Obj, Effect_Obj, Reward_Obj, Bubble_Obj;
 	public Transform Status_Trans, Player_Trans, Enemy_Trans, DropContainer_Trans;
 
+	public List<ItemSchema> ItemSchema_List;
+
 	private int Attack = 100;
 	private Coroutine Cronus_Routine = null;
 	private List<GameObject> DeleteResearvedObjects = new List<GameObject>();
@@ -72,7 +74,7 @@ public class GameMaster: MonoBehaviour{
 			if(true){
 				// Enemy_Trans.gameObject.SetActive(false);
 				Enemy_Trans.localPosition = new Vector3(900f, -420f, 0f);
-				MakeRewardItem();
+				StartCoroutine(MakeRewardItem());
 				yield break;
 			}
 		}
@@ -81,20 +83,25 @@ public class GameMaster: MonoBehaviour{
 	/// <summary>
 	/// Make reward three items
 	/// </summary>
-	public void MakeRewardItem(){
+	public IEnumerator MakeRewardItem(){
 		DeleteResearvedObjects = new List<GameObject>();
 		
 		for(int i=0; i<3; i++){
+			ItemSchema schema = ItemSchema_List[0];
+
 			GameObject reward = Instantiate(Reward_Obj, DropContainer_Trans);
 			GameObject bubble = Instantiate(Bubble_Obj, DropContainer_Trans);
 			reward.transform.localPosition = new Vector3(950f + 350f * i, 500f, -10f);
 			bubble.transform.localPosition = new Vector3(950f + 350f * i, 500f, -10f);
-			reward.GetComponent<DragItem>().master = this;
-			reward.GetComponent<DragItem>().itemindex = i;
+			reward.GetComponent<DragItem>().DragItemMake(this, i, 1, schema);
 
 			DeleteResearvedObjects.Add(reward);
 			DeleteResearvedObjects.Add(bubble);
+
+			yield return new WaitForSeconds(0.2f);
 		}
+
+		yield break;
 	}
 
 	public void ItemGetHundler(int index){

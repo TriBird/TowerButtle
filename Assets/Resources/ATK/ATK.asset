@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2d3f1b6af4ff29c47af64b03633401c8, type: 3}
+  m_Name: ATK
+  m_EditorClassIdentifier: 
+  ItemSchema_name: "\u3064\u308B\u304E\u30B7\u30EA\u30FC\u30BA"
+  ItemSchema_sprites:
+  - {fileID: 21300000, guid: e5201a4aa2e2ca649b673fc6ae829687, type: 3}
+  - {fileID: 21300000, guid: d334b8b89a71b1d4c9e2621105cd1265, type: 3}
+  - {fileID: 21300000, guid: 7441b2a12f7e7154eae01a67d8ab316b, type: 3}
+  - {fileID: 21300000, guid: 7bdda78eb1bf3ad4ab1fd6464afc06cf, type: 3}
+  - {fileID: 21300000, guid: c943e13862b77a54cb721e0976a272be, type: 3}

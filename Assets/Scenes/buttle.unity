@@ -1013,6 +1013,8 @@ MonoBehaviour:
   Player_Trans: {fileID: 1395923464}
   Enemy_Trans: {fileID: 383609673}
   DropContainer_Trans: {fileID: 82331787}
+  ItemSchema_List:
+  - {fileID: 11400000, guid: 0087c46025a50404c948b445a53837ea, type: 2}
 --- !u!1 &1371386309
 GameObject:
   m_ObjectHideFlags: 0
