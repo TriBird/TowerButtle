@@ -10,7 +10,10 @@ public class GameMaster: MonoBehaviour{
 	public Transform Status_Trans, Player_Trans, Enemy_Trans, DropContainer_Trans;
 
 	public List<ItemSchema> ItemSchema_List;
+	public List<EnemyBase> Enemy_List;
 
+	private int CurrentEnemyIndex = 0;
+	private Enemy EnemyInstance = null;
 	private int Attack = 100;
 	private Coroutine Cronus_Routine = null;
 	private List<GameObject> DeleteResearvedObjects = new List<GameObject>();
@@ -32,6 +35,10 @@ public class GameMaster: MonoBehaviour{
 		Enemy_Trans.gameObject.SetActive(true);
 		Enemy_Trans.DOLocalMoveX(335f, 0.5f);
 
+		EnemyInstance = new Enemy(Enemy_List[CurrentEnemyIndex]);
+		Enemy_Trans.GetComponent<Image>().sprite = EnemyInstance.ebase.EnemySprite;
+		Enemy_Trans.Find("HPBar/Current").GetComponent<Image>().fillAmount = (float)EnemyInstance.CurrentHItPoint / EnemyInstance.ebase.EnemyHitPoint;
+
 		Cronus_Routine = StartCoroutine(Cronus());
 	}
 
@@ -39,7 +46,7 @@ public class GameMaster: MonoBehaviour{
 	/// Animation when enemy damaging
 	/// </summary>
 	/// <returns></returns>
-	public IEnumerator Anim_Damaging(){
+	public IEnumerator Anim_Damaging(int damage){
 		Player_Trans.DOLocalRotate(new Vector3(0, 360f, 0), 0.5f, RotateMode.FastBeyond360);
 		yield return new WaitForSeconds(0.3f);
 
@@ -68,10 +75,16 @@ public class GameMaster: MonoBehaviour{
 	public IEnumerator Cronus(){
 		while(true){
 			yield return new WaitForSeconds(2f);
-			StartCoroutine(Anim_Damaging());
 
 			// proc:: damage calc
-			if(true){
+			int damage = Attack;
+			EnemyInstance.CurrentHItPoint -= damage;
+			StartCoroutine(Anim_Damaging(damage));
+
+			Enemy_Trans.Find("HPBar/Current").GetComponent<Image>().fillAmount = (float)EnemyInstance.CurrentHItPoint / EnemyInstance.ebase.EnemyHitPoint;
+			
+			// judge dead
+			if(EnemyInstance.CurrentHItPoint <= 0){
 				// Enemy_Trans.gameObject.SetActive(false);
 				Enemy_Trans.localPosition = new Vector3(900f, -420f, 0f);
 				StartCoroutine(MakeRewardItem());
@@ -91,8 +104,10 @@ public class GameMaster: MonoBehaviour{
 
 			GameObject reward = Instantiate(Reward_Obj, DropContainer_Trans);
 			GameObject bubble = Instantiate(Bubble_Obj, DropContainer_Trans);
-			reward.transform.localPosition = new Vector3(950f + 350f * i, 500f, -10f);
-			bubble.transform.localPosition = new Vector3(950f + 350f * i, 500f, -10f);
+			float posy = 400f;
+			if(i == 1) posy = 500f;
+			reward.transform.localPosition = new Vector3(950f + 350f * i, posy, -10f);
+			bubble.transform.localPosition = new Vector3(950f + 350f * i, posy, -10f);
 			reward.GetComponent<DragItem>().DragItemMake(this, i, 1, schema);
 
 			DeleteResearvedObjects.Add(reward);
@@ -111,7 +126,10 @@ public class GameMaster: MonoBehaviour{
 		foreach(GameObject obj in DeleteResearvedObjects) Destroy(obj);
 		DeleteResearvedObjects = new List<GameObject>();
 
-		EnemyAppear();
+		CurrentEnemyIndex++;
+		if(CurrentEnemyIndex < Enemy_List.Count){
+			EnemyAppear();
+		}
 	}
 
 	public void Killed(){

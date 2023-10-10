@@ -6,18 +6,12 @@ using DG.Tweening;
 using System.Linq;
 using System.Reflection;
 
-public class Enemy: EnemyBase{
+public class Enemy{
+	public EnemyBase ebase;
 	public int CurrentHItPoint = 0;
 
 	public Enemy(EnemyBase ebase){
-		List<PropertyInfo> props = ebase
-			.GetType()
-			.GetProperties(BindingFlags.Instance | BindingFlags.Public)?
-			.ToList();
-
-		props.ForEach(prop =>	{
-			var propValue = prop.GetValue(ebase);
-			typeof(Enemy).GetProperty(prop.Name).SetValue(this, propValue);
-		});
+		this.ebase = ebase;
+		this.CurrentHItPoint = ebase.EnemyHitPoint;
 	}
 }
