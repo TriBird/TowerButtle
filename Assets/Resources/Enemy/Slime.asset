@@ -14,4 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   EnemyName: "\u30B9\u30E9\u30A4\u30E0"
   EnemySprite: {fileID: 21300000, guid: 154c1226976878a47bf8c568b36bba0f, type: 3}
-  EnemyHitPoint: 1
+  EnemyHitPoint: 102
+  EnemyAttack: 10
+  EnemySpeed: 100

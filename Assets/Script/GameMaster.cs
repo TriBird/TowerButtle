@@ -7,7 +7,7 @@ using DG.Tweening;
 public class GameMaster: MonoBehaviour{
 
 	public GameObject Damage_Obj, Effect_Obj, Reward_Obj, Bubble_Obj;
-	public Transform Status_Trans, Player_Trans, Enemy_Trans, DropContainer_Trans;
+	public Transform Status_Trans, Player_Trans, Enemy_Trans, DropContainer_Trans, Buttle_Trans;
 
 	public List<ItemSchema> ItemSchema_List;
 	public List<EnemyBase> Enemy_List;
@@ -24,7 +24,7 @@ public class GameMaster: MonoBehaviour{
 
 	public void StatusAdder_ATK(int addnum){
 		Attack += addnum;
-		Status_Trans.Find("ATK").GetComponent<Text>().text = "Attack " + Attack;
+		Status_Trans.Find("ATK").GetComponent<Text>().text = "ATK " + Attack;
 	}
 
 	public void CalcStatus(){
@@ -55,7 +55,7 @@ public class GameMaster: MonoBehaviour{
 		GameObject obj = Instantiate(Effect_Obj, Enemy_Trans);
 		obj.transform.localPosition = new Vector3(-50f, 50f);
 
-		GameObject dmg = Instantiate(Damage_Obj, Enemy_Trans.parent);
+		GameObject dmg = Instantiate(Damage_Obj, Buttle_Trans);
 		dmg.transform.localPosition = Enemy_Trans.localPosition;
 		dmg.GetComponent<Text>().text = "9999";
 		dmg.transform.DOLocalMoveY(dmg.transform.localPosition.y + 200f, 1.0f);
@@ -74,7 +74,7 @@ public class GameMaster: MonoBehaviour{
 	/// <returns></returns>
 	public IEnumerator Cronus(){
 		while(true){
-			yield return new WaitForSeconds(2f);
+			yield return new WaitForSeconds(1.0f);
 
 			// proc:: damage calc
 			int damage = Attack;
@@ -85,6 +85,7 @@ public class GameMaster: MonoBehaviour{
 			
 			// judge dead
 			if(EnemyInstance.CurrentHItPoint <= 0){
+				yield return new WaitForSeconds(1.6f);
 				// Enemy_Trans.gameObject.SetActive(false);
 				Enemy_Trans.localPosition = new Vector3(900f, -420f, 0f);
 				StartCoroutine(MakeRewardItem());
@@ -100,7 +101,7 @@ public class GameMaster: MonoBehaviour{
 		DeleteResearvedObjects = new List<GameObject>();
 		
 		for(int i=0; i<3; i++){
-			ItemSchema schema = ItemSchema_List[0];
+			ItemSchema schema = ItemSchema_List[Random.Range(0, ItemSchema_List.Count)];
 
 			GameObject reward = Instantiate(Reward_Obj, DropContainer_Trans);
 			GameObject bubble = Instantiate(Bubble_Obj, DropContainer_Trans);
@@ -108,7 +109,7 @@ public class GameMaster: MonoBehaviour{
 			if(i == 1) posy = 500f;
 			reward.transform.localPosition = new Vector3(950f + 350f * i, posy, -10f);
 			bubble.transform.localPosition = new Vector3(950f + 350f * i, posy, -10f);
-			reward.GetComponent<DragItem>().DragItemMake(this, i, 1, schema);
+			reward.GetComponent<DragItem>().DragItemMake(this, i, 0, schema);
 
 			DeleteResearvedObjects.Add(reward);
 			DeleteResearvedObjects.Add(bubble);

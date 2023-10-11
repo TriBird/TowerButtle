@@ -11,5 +11,7 @@ public class EnemyBase : ScriptableObject{
 	public Sprite EnemySprite;
 
 	public int EnemyHitPoint = 0;
+	public int EnemyAttack = 0;
+	public int EnemySpeed = 100;
 
 }
