@@ -1334,6 +1334,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 7585f02ca36117146bee4bbfeb5a39f9, type: 2}
   - {fileID: 11400000, guid: 029bd6c1bfe2a2d4fa884d585e3d68d0, type: 2}
   - {fileID: 11400000, guid: 029bd6c1bfe2a2d4fa884d585e3d68d0, type: 2}
+  stageMaster: {fileID: 11400000, guid: b87d14a78d83c684c959b9391f6c8d1c, type: 2}
 --- !u!1 &1144465203
 GameObject:
   m_ObjectHideFlags: 0

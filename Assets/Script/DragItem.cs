@@ -12,10 +12,10 @@ public class DragItem: MonoBehaviour, IDragHandler, IEndDragHandler, IBeginDragH
 	public int itemindex = -1;
 	public ItemSchema _schema;
 	public int _level = 1;
+	public bool isDropEnable = false;
 
 	private bool isCollisionEnable = true;
 	private Transform LastTriggered_Trans = null;
-	private bool isDropEnable = false;
 	private Vector3 beforeDragPosition = new Vector3();
 
 	private void Start() {
@@ -105,7 +105,8 @@ public class DragItem: MonoBehaviour, IDragHandler, IEndDragHandler, IBeginDragH
 			float vel = transform.GetComponent<Rigidbody2D>().velocity.magnitude;
 
 			if (vel < 0.001){
-				master_instance.StatusAdder_ATK(1);
+				// master_instance.StatusAdder_ATK(1);
+				master_instance.CalcStatus();
 				yield break;
 			}
 		}

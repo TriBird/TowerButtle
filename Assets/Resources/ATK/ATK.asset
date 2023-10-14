@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2d3f1b6af4ff29c47af64b03633401c8, type: 3}
   m_Name: ATK
   m_EditorClassIdentifier: 
-  ItemSchema_name: "\u3064\u308B\u304E\u30B7\u30EA\u30FC\u30BA"
+  ItemSchema_name: Sword
   ItemSchema_sprites:
   - {fileID: 21300000, guid: e5201a4aa2e2ca649b673fc6ae829687, type: 3}
   - {fileID: 21300000, guid: d334b8b89a71b1d4c9e2621105cd1265, type: 3}

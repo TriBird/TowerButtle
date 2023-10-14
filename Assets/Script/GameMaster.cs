@@ -11,12 +11,19 @@ public class GameMaster: MonoBehaviour{
 
 	public List<ItemSchema> ItemSchema_List;
 	public List<EnemyBase> Enemy_List;
+	public StageMaster stageMaster;
 
+	private int Floor = 0;
 	private int CurrentEnemyIndex = 0;
 	private Enemy EnemyInstance = null;
 	private int Attack = 100;
+	private int Defence = 0;
 	private Coroutine Cronus_Routine = null;
+	private Coroutine EnemyCronus_Routine = null;
 	private List<GameObject> DeleteResearvedObjects = new List<GameObject>();
+
+	private List<int> ATK_table = new List<int>(){1,3,7,15};
+	private List<int> DEF_table = new List<int>(){1,3,7,15};
 
 	void Start() {
 		EnemyAppear();
@@ -27,19 +34,55 @@ public class GameMaster: MonoBehaviour{
 		Status_Trans.Find("ATK").GetComponent<Text>().text = "ATK " + Attack;
 	}
 
-	public void CalcStatus(){
+	public void StatusAdder_DEF(int addnum){
+		Defence += addnum;
+		Status_Trans.Find("DEF").GetComponent<Text>().text = "DEF " + Defence;
+	}
 
+	public void CalcStatus(){
+		Attack = 100;
+		Defence = 0;
+
+		foreach(Transform tmp in DropContainer_Trans){
+			DragItem ditem = tmp.GetComponent<DragItem>();
+			if(ditem is null) continue;
+			if(!ditem.isDropEnable) continue;
+
+			if(ditem._schema.ItemSchema_name == "Sword") StatusAdder_ATK(ATK_table[ditem._level]);
+			if(ditem._schema.ItemSchema_name == "Armor") StatusAdder_DEF(DEF_table[ditem._level]);
+		}
 	}
 
 	public void EnemyAppear(){
+		Floor++;
+
 		Enemy_Trans.gameObject.SetActive(true);
 		Enemy_Trans.DOLocalMoveX(335f, 0.5f);
 
-		EnemyInstance = new Enemy(Enemy_List[CurrentEnemyIndex]);
+		StageGroup group = stageMaster.group[Mathf.FloorToInt(Floor / 5f)];
+		EnemyInstance = new Enemy(group.enemies[Random.Range(0, group.enemies.Count)]);
+		// EnemyInstance = new Enemy(Enemy_List[CurrentEnemyIndex]);
 		Enemy_Trans.GetComponent<Image>().sprite = EnemyInstance.ebase.EnemySprite;
 		Enemy_Trans.Find("HPBar/Current").GetComponent<Image>().fillAmount = (float)EnemyInstance.CurrentHItPoint / EnemyInstance.ebase.EnemyHitPoint;
 
 		Cronus_Routine = StartCoroutine(Cronus());
+		EnemyCronus_Routine = StartCoroutine(EnemyCronus());
+	}
+
+	public IEnumerator EnemyCronus(){
+		while(true){
+			yield return new WaitForSeconds(EnemyInstance.ebase.EnemySpeed / 100f);
+
+			Vector2 pos = Enemy_Trans.localPosition;
+			Sequence sequence = DOTween.Sequence();
+			sequence.Append(Enemy_Trans.DOLocalMoveX(pos.x-50f, 0.2f));
+			sequence.Append(Enemy_Trans.DOLocalMoveX(pos.x, 0.1f));
+
+			//enemy attack
+			GameObject damage_txt = Instantiate(Damage_Obj, Buttle_Trans);
+			damage_txt.GetComponent<DamageCtrl>().master = this;
+			damage_txt.transform.localPosition = Player_Trans.localPosition;
+		}
 	}
 
 	/// <summary>
@@ -56,10 +99,8 @@ public class GameMaster: MonoBehaviour{
 		obj.transform.localPosition = new Vector3(-50f, 50f);
 
 		GameObject dmg = Instantiate(Damage_Obj, Buttle_Trans);
+		dmg.GetComponent<DamageCtrl>().master = this;
 		dmg.transform.localPosition = Enemy_Trans.localPosition;
-		dmg.GetComponent<Text>().text = "9999";
-		dmg.transform.DOLocalMoveY(dmg.transform.localPosition.y + 200f, 1.0f);
-		dmg.transform.GetComponent<CanvasGroup>().DOFade(0, 1.0f).SetLink(dmg).SetDelay(0.3f);
 		yield return new WaitForSeconds(0.3f);
 
 		Destroy(obj);
@@ -85,10 +126,11 @@ public class GameMaster: MonoBehaviour{
 			
 			// judge dead
 			if(EnemyInstance.CurrentHItPoint <= 0){
-				yield return new WaitForSeconds(1.6f);
+				yield return new WaitForSeconds(0.8f);
 				// Enemy_Trans.gameObject.SetActive(false);
 				Enemy_Trans.localPosition = new Vector3(900f, -420f, 0f);
 				StartCoroutine(MakeRewardItem());
+				StopCoroutine(EnemyCronus_Routine);
 				yield break;
 			}
 		}
@@ -127,10 +169,7 @@ public class GameMaster: MonoBehaviour{
 		foreach(GameObject obj in DeleteResearvedObjects) Destroy(obj);
 		DeleteResearvedObjects = new List<GameObject>();
 
-		CurrentEnemyIndex++;
-		if(CurrentEnemyIndex < Enemy_List.Count){
-			EnemyAppear();
-		}
+		EnemyAppear();
 	}
 
 	public void Killed(){
