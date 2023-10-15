@@ -17,3 +17,4 @@ MonoBehaviour:
   EnemyHitPoint: 102
   EnemyAttack: 10
   EnemySpeed: 100
+  EnemyExp: 10

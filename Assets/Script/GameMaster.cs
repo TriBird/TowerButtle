@@ -8,6 +8,7 @@ public class GameMaster: MonoBehaviour{
 
 	public GameObject Damage_Obj, Effect_Obj, Reward_Obj, Bubble_Obj;
 	public Transform Status_Trans, Player_Trans, Enemy_Trans, DropContainer_Trans, Buttle_Trans;
+	public Transform HP_Bar, ExpBar;
 
 	public List<ItemSchema> ItemSchema_List;
 	public List<EnemyBase> Enemy_List;
@@ -18,6 +19,8 @@ public class GameMaster: MonoBehaviour{
 	private Enemy EnemyInstance = null;
 	private int Attack = 100;
 	private int Defence = 0;
+	private int CurrentEXP = 0;
+	private int CurrentLevel = 1;
 	private Coroutine Cronus_Routine = null;
 	private Coroutine EnemyCronus_Routine = null;
 	private List<GameObject> DeleteResearvedObjects = new List<GameObject>();
@@ -27,6 +30,24 @@ public class GameMaster: MonoBehaviour{
 
 	void Start() {
 		EnemyAppear();
+		// Debug_LevelExp();
+	}
+
+	public void Debug_LevelExp(){
+		for(int i=0; i<30; i++){
+			print("Lv." + CurrentLevel + ":" + NextLevelExp());
+			CurrentLevel++;
+		}
+	}
+
+	public int NextLevelExp(){
+		int a = 10;
+		for(int i=0; i<CurrentLevel; i++){
+			a = Mathf.CeilToInt(a * 1.1f);
+		}
+		int b = CurrentLevel * 15;
+
+		return Mathf.FloorToInt((a + b) / 2f);
 	}
 
 	public void StatusAdder_ATK(int addnum){
@@ -58,6 +79,11 @@ public class GameMaster: MonoBehaviour{
 
 		Enemy_Trans.gameObject.SetActive(true);
 		Enemy_Trans.DOLocalMoveX(335f, 0.5f);
+
+		if(Mathf.FloorToInt(Floor / 5f) >= stageMaster.group.Count){
+			print("group is less than registration");
+			return;
+		}
 
 		StageGroup group = stageMaster.group[Mathf.FloorToInt(Floor / 5f)];
 		EnemyInstance = new Enemy(group.enemies[Random.Range(0, group.enemies.Count)]);
@@ -100,6 +126,7 @@ public class GameMaster: MonoBehaviour{
 
 		GameObject dmg = Instantiate(Damage_Obj, Buttle_Trans);
 		dmg.GetComponent<DamageCtrl>().master = this;
+		dmg.GetComponent<DamageCtrl>().DamegeText = damage.ToString();
 		dmg.transform.localPosition = Enemy_Trans.localPosition;
 		yield return new WaitForSeconds(0.3f);
 
@@ -127,10 +154,28 @@ public class GameMaster: MonoBehaviour{
 			// judge dead
 			if(EnemyInstance.CurrentHItPoint <= 0){
 				yield return new WaitForSeconds(0.8f);
-				// Enemy_Trans.gameObject.SetActive(false);
+
 				Enemy_Trans.localPosition = new Vector3(900f, -420f, 0f);
-				StartCoroutine(MakeRewardItem());
 				StopCoroutine(EnemyCronus_Routine);
+
+				// process of experience points
+				CurrentEXP += EnemyInstance.ebase.EnemyExp;
+				int NextExp = NextLevelExp();
+				if(NextExp <= CurrentEXP){
+					GameObject dmg = Instantiate(Damage_Obj, Buttle_Trans);
+					dmg.GetComponent<DamageCtrl>().master = this;
+					dmg.GetComponent<DamageCtrl>().DamegeText = "Level Up!";
+					dmg.transform.localPosition = Player_Trans.localPosition;
+
+					StartCoroutine(MakeRewardItem());
+					
+					CurrentLevel++;
+					CurrentEXP = 0;
+				}else{
+					EnemyAppear();
+				}
+				ExpBar.Find("Current").GetComponent<Image>().fillAmount = (float)CurrentEXP / NextExp;
+
 				yield break;
 			}
 		}
@@ -156,7 +201,7 @@ public class GameMaster: MonoBehaviour{
 			DeleteResearvedObjects.Add(reward);
 			DeleteResearvedObjects.Add(bubble);
 
-			yield return new WaitForSeconds(0.2f);
+			yield return new WaitForSeconds(0.1f);
 		}
 
 		yield break;
@@ -170,10 +215,6 @@ public class GameMaster: MonoBehaviour{
 		DeleteResearvedObjects = new List<GameObject>();
 
 		EnemyAppear();
-	}
-
-	public void Killed(){
-
 	}
 
 }

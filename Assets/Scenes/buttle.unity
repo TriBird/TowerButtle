@@ -1324,6 +1324,8 @@ MonoBehaviour:
   Enemy_Trans: {fileID: 383609673}
   DropContainer_Trans: {fileID: 82331787}
   Buttle_Trans: {fileID: 1436063730}
+  HP_Bar: {fileID: 519543086}
+  ExpBar: {fileID: 1144465204}
   ItemSchema_List:
   - {fileID: 11400000, guid: 0087c46025a50404c948b445a53837ea, type: 2}
   - {fileID: 11400000, guid: ba9834d3cdf30f04594b278d8de59900, type: 2}

@@ -8,8 +8,10 @@ public class DamageCtrl: MonoBehaviour{
 
 	public GameMaster master;
 
+	public string DamegeText = "dummy";
+
 	void Start() {
-		GetComponent<Text>().text = "9999";
+		GetComponent<Text>().text = DamegeText;
 		transform.DOLocalMoveY(transform.localPosition.y + 200f, 1.0f);
 		transform.GetComponent<CanvasGroup>().DOFade(0, 1.0f).SetLink(gameObject).SetDelay(0.3f);	
 	}

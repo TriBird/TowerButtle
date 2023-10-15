@@ -13,5 +13,6 @@ public class EnemyBase : ScriptableObject{
 	public int EnemyHitPoint = 0;
 	public int EnemyAttack = 0;
 	public int EnemySpeed = 100;
+	public int EnemyExp = 0;
 
 }
