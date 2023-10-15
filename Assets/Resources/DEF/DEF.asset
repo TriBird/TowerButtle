@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2d3f1b6af4ff29c47af64b03633401c8, type: 3}
+  m_Name: DEF
+  m_EditorClassIdentifier: 
+  ItemSchema_name: Armor
+  ItemSchema_sprites:
+  - {fileID: 21300000, guid: 8ee51dac3a88a964f9c340fc9ec6a0e0, type: 3}
+  - {fileID: 21300000, guid: f39f2c6257f8c8a49b482233ea797e82, type: 3}
+  - {fileID: 21300000, guid: 7be466246a63f5b47baede5d6744375b, type: 3}
+  - {fileID: 21300000, guid: 659a3a8d559d5ea4c85add35823f43f5, type: 3}
+  - {fileID: 21300000, guid: 62f5a91a88d28534db853ee1aeecf0f0, type: 3}
