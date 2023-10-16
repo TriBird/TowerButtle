@@ -17,6 +17,8 @@ public class GameMaster: MonoBehaviour{
 	private int Floor = 0;
 	private int CurrentEnemyIndex = 0;
 	private Enemy EnemyInstance = null;
+	private int PlayerHitPoint = 1000;
+	private int PlayerCurrentHitPoint = 0;
 	private int Attack = 100;
 	private int Defence = 0;
 	private int CurrentEXP = 0;
@@ -31,6 +33,9 @@ public class GameMaster: MonoBehaviour{
 	void Start() {
 		EnemyAppear();
 		// Debug_LevelExp();
+
+		PlayerCurrentHitPoint = PlayerHitPoint;
+		HP_Bar.Find("Current").GetComponent<Image>().fillAmount = (float)PlayerCurrentHitPoint / PlayerHitPoint;
 	}
 
 	public void Debug_LevelExp(){
@@ -108,6 +113,10 @@ public class GameMaster: MonoBehaviour{
 			GameObject damage_txt = Instantiate(Damage_Obj, Buttle_Trans);
 			damage_txt.GetComponent<DamageCtrl>().master = this;
 			damage_txt.transform.localPosition = Player_Trans.localPosition;
+			damage_txt.GetComponent<DamageCtrl>().DamegeText = EnemyInstance.ebase.EnemyAttack.ToString();
+
+			PlayerCurrentHitPoint -= EnemyInstance.ebase.EnemyAttack;
+			HP_Bar.Find("Current").GetComponent<Image>().fillAmount = (float)PlayerCurrentHitPoint / PlayerHitPoint;
 		}
 	}
 
