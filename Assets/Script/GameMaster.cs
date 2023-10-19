@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
+using System.Linq;
 
 public class GameMaster: MonoBehaviour{
 
@@ -11,6 +12,7 @@ public class GameMaster: MonoBehaviour{
 	public Transform HP_Bar, ExpBar;
 
 	public List<ItemSchema> ItemSchema_List;
+	public ItemSchema Key_ItemSchema;
 	public List<EnemyBase> Enemy_List;
 	public StageMaster stageMaster;
 
@@ -26,16 +28,18 @@ public class GameMaster: MonoBehaviour{
 	private Coroutine Cronus_Routine = null;
 	private Coroutine EnemyCronus_Routine = null;
 	private List<GameObject> DeleteResearvedObjects = new List<GameObject>();
+	private List<bool> BossKey_flags = new List<bool>();
 
 	private List<int> ATK_table = new List<int>(){1,3,7,15};
 	private List<int> DEF_table = new List<int>(){1,3,7,15};
 
 	void Start() {
-		EnemyAppear();
 		// Debug_LevelExp();
 
 		PlayerCurrentHitPoint = PlayerHitPoint;
 		HP_Bar.Find("Current").GetComponent<Image>().fillAmount = (float)PlayerCurrentHitPoint / PlayerHitPoint;
+
+		EnemyAppear();
 	}
 
 	public void Debug_LevelExp(){
@@ -76,7 +80,19 @@ public class GameMaster: MonoBehaviour{
 
 			if(ditem._schema.ItemSchema_name == "Sword") StatusAdder_ATK(ATK_table[ditem._level]);
 			if(ditem._schema.ItemSchema_name == "Armor") StatusAdder_DEF(DEF_table[ditem._level]);
+
+			// collect 3 gems to summon deamon king
+			if(ditem._schema.ItemSchema_name == "KeyItem"){
+				BossKey_flags[ditem._level] = true;
+				if(!BossKey_flags.Exists(x => x == false)){
+					BossAppear();
+				}
+			}
 		}
+	}
+
+	public void BossAppear(){
+
 	}
 
 	public void EnemyAppear(){
@@ -97,12 +113,12 @@ public class GameMaster: MonoBehaviour{
 		Enemy_Trans.Find("HPBar/Current").GetComponent<Image>().fillAmount = (float)EnemyInstance.CurrentHItPoint / EnemyInstance.ebase.EnemyHitPoint;
 
 		Cronus_Routine = StartCoroutine(Cronus());
-		EnemyCronus_Routine = StartCoroutine(EnemyCronus());
+		// EnemyCronus_Routine = StartCoroutine(EnemyCronus());
 	}
 
 	public IEnumerator EnemyCronus(){
 		while(true){
-			yield return new WaitForSeconds(EnemyInstance.ebase.EnemySpeed / 100f);
+			yield return new WaitForSeconds(EnemyInstance.ebase.EnemySpeed / 150f);
 
 			Vector2 pos = Enemy_Trans.localPosition;
 			Sequence sequence = DOTween.Sequence();
@@ -137,21 +153,22 @@ public class GameMaster: MonoBehaviour{
 		dmg.GetComponent<DamageCtrl>().master = this;
 		dmg.GetComponent<DamageCtrl>().DamegeText = damage.ToString();
 		dmg.transform.localPosition = Enemy_Trans.localPosition;
-		yield return new WaitForSeconds(0.3f);
+		yield return new WaitForSeconds(0.2f);
 
 		Destroy(obj);
-		yield return new WaitForSeconds(1.0f);
+		yield return new WaitForSeconds(0.8f);
 
 		Destroy(dmg);
 	}
 
 	/// <summary>
 	/// Main game routine
+	/// Discard when player is rewarding.
 	/// </summary>
 	/// <returns></returns>
 	public IEnumerator Cronus(){
 		while(true){
-			yield return new WaitForSeconds(1.0f);
+			yield return new WaitForSeconds(0.75f);
 
 			// proc:: damage calc
 			int damage = Attack;
@@ -162,10 +179,12 @@ public class GameMaster: MonoBehaviour{
 			
 			// judge dead
 			if(EnemyInstance.CurrentHItPoint <= 0){
-				yield return new WaitForSeconds(0.8f);
+				yield return new WaitForSeconds(1.0f);
 
+				// StopCoroutine(EnemyCronus_Routine);
 				Enemy_Trans.localPosition = new Vector3(900f, -420f, 0f);
-				StopCoroutine(EnemyCronus_Routine);
+
+				yield return new WaitForSeconds(0.1f);
 
 				// process of experience points
 				CurrentEXP += EnemyInstance.ebase.EnemyExp;
@@ -197,7 +216,21 @@ public class GameMaster: MonoBehaviour{
 		DeleteResearvedObjects = new List<GameObject>();
 		
 		for(int i=0; i<3; i++){
-			ItemSchema schema = ItemSchema_List[Random.Range(0, ItemSchema_List.Count)];
+
+			// appear key item for boss on 10% chance and more 20F
+			ItemSchema schema = null;
+			int level = 0; 
+			bool isKey = false;
+			if(Floor > 5 && Random.Range(0, 80) == 0){
+				schema = Key_ItemSchema;
+				level = Random.Range(0, 3);
+				// if player get the gem
+
+				isKey = true;
+			}else{
+				schema = ItemSchema_List[Random.Range(0, ItemSchema_List.Count)];
+				level = 0;
+			}
 
 			GameObject reward = Instantiate(Reward_Obj, DropContainer_Trans);
 			GameObject bubble = Instantiate(Bubble_Obj, DropContainer_Trans);
@@ -205,7 +238,7 @@ public class GameMaster: MonoBehaviour{
 			if(i == 1) posy = 500f;
 			reward.transform.localPosition = new Vector3(950f + 350f * i, posy, -10f);
 			bubble.transform.localPosition = new Vector3(950f + 350f * i, posy, -10f);
-			reward.GetComponent<DragItem>().DragItemMake(this, i, 0, schema);
+			reward.GetComponent<DragItem>().DragItemMake(this, i, level, isKey, schema);
 
 			DeleteResearvedObjects.Add(reward);
 			DeleteResearvedObjects.Add(bubble);

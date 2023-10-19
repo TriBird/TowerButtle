@@ -13,6 +13,8 @@ public class DamageCtrl: MonoBehaviour{
 	void Start() {
 		GetComponent<Text>().text = DamegeText;
 		transform.DOLocalMoveY(transform.localPosition.y + 200f, 1.0f);
-		transform.GetComponent<CanvasGroup>().DOFade(0, 1.0f).SetLink(gameObject).SetDelay(0.3f);	
+		transform.GetComponent<CanvasGroup>().DOFade(0, 1.0f).SetLink(gameObject).SetDelay(0.3f).OnComplete(()=>{
+			Destroy(gameObject);
+		});	
 	}
 }
