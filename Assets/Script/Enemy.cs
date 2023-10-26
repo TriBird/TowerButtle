@@ -10,9 +10,14 @@ public class Enemy{
 	public EnemyBase ebase;
 	public int CurrentHitPoint = 0;
 	public int CurrentShieldPoint = 0;
+	public int MaxShieldPoint = 0;
 
 	public Enemy(EnemyBase ebase){
 		this.ebase = ebase;
 		this.CurrentHitPoint = ebase.EnemyHitPoint;
+	}
+
+	public void SetShield(int value){
+		MaxShieldPoint = CurrentShieldPoint = value;
 	}
 }

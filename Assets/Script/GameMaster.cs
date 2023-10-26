@@ -209,6 +209,7 @@ public class GameMaster: MonoBehaviour{
 		evitation.SetLoops(-1);
 		evitation.SetLink(Enemy_Trans.gameObject);
 
+		Cronus_Routine = StartCoroutine(Cronus());
 		EnemyCronus_Routine = StartCoroutine(FireDragonCronus());
 	}
 
@@ -220,7 +221,7 @@ public class GameMaster: MonoBehaviour{
 
 			// 英傑の歌
 			if(EnemyInstance.CurrentShieldPoint <= 0){
-				AddEffect_Sheild(300);
+				AddEffect_Sheild(1000);
 			}
 
 			switch(routine_index){
@@ -232,7 +233,7 @@ public class GameMaster: MonoBehaviour{
 
 	public void AddEffect_Sheild(int value, string skillname = "シールド"){
 		SkillName_View(skillname);
-		EnemyInstance.CurrentShieldPoint = value;
+		EnemyInstance.SetShield(value);
 		Enemy_Trans.Find("Shield").gameObject.SetActive(true);
 	}
 
@@ -281,10 +282,21 @@ public class GameMaster: MonoBehaviour{
 
 			// proc:: damage calc
 			int damage = Attack;
-			EnemyInstance.CurrentHitPoint -= damage;
+
+			// if enemy has a shield, player attack the shield
+			if(EnemyInstance.CurrentShieldPoint > 0){
+				EnemyInstance.CurrentShieldPoint -= damage;
+				// judge shield break
+				if(EnemyInstance.CurrentShieldPoint < 0){
+					Enemy_Trans.Find("Shield").gameObject.SetActive(false);
+				}
+			}else{
+				EnemyInstance.CurrentHitPoint -= damage;
+			}
 			StartCoroutine(Anim_Damaging(damage));
 
 			Enemy_Trans.Find("HPBar/Current").GetComponent<Image>().fillAmount = (float)EnemyInstance.CurrentHitPoint / EnemyInstance.ebase.EnemyHitPoint;
+			Enemy_Trans.Find("Shield/HPBar/Current").GetComponent<Image>().fillAmount = (float)EnemyInstance.CurrentShieldPoint / EnemyInstance.MaxShieldPoint;
 			
 			// judge dead
 			if(EnemyInstance.CurrentHitPoint <= 0){
