@@ -13,8 +13,9 @@ public class DragItem: MonoBehaviour, IDragHandler, IEndDragHandler, IBeginDragH
 	public ItemSchema _schema;
 	public int _level = 1;
 	public bool isDropEnable = false;
+	public bool isCollisionEnable = true;
 
-	private bool isCollisionEnable = true;
+	private bool isMergeEnable = true;
 	private Transform LastTriggered_Trans = null;
 	private Vector3 beforeDragPosition = new Vector3();
 
@@ -25,7 +26,7 @@ public class DragItem: MonoBehaviour, IDragHandler, IEndDragHandler, IBeginDragH
 	/// <summary>
 	/// Instance Maker
 	/// </summary>
-	public void DragItemMake(GameMaster master, int index, int level, ItemSchema schema){
+	public void DragItemMake(GameMaster master, int index, int level, bool isKey, ItemSchema schema){
 		master_instance = master;
 		itemindex = index;
 		_level = level;
@@ -35,6 +36,11 @@ public class DragItem: MonoBehaviour, IDragHandler, IEndDragHandler, IBeginDragH
 		transform.localScale = new Vector3(75, 75);
 		Destroy(transform.GetComponent<PolygonCollider2D>());
 		gameObject.AddComponent<PolygonCollider2D>();
+
+		// if isKey is enable, then give property of unmerge
+		if(isKey){
+			isMergeEnable = false;
+		}
 	}
 	
 	public void OnTriggerEnter2D(Collider2D other){
@@ -48,7 +54,7 @@ public class DragItem: MonoBehaviour, IDragHandler, IEndDragHandler, IBeginDragH
 	public void OnCollisionEnter2D(Collision2D collisionInfo){
 		if(!isCollisionEnable) return;
 
-		if(isDropEnable && collisionInfo.transform.GetComponent<DragItem>()){
+		if(isDropEnable && collisionInfo.transform.GetComponent<DragItem>() && isMergeEnable){
 			DragItem di = collisionInfo.transform.GetComponent<DragItem>();
 			if(di._schema.ItemSchema_name == _schema.ItemSchema_name && di._level == _level){
 				di.isCollisionEnable = false;
