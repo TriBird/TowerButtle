@@ -8,10 +8,11 @@ using System.Reflection;
 
 public class Enemy{
 	public EnemyBase ebase;
-	public int CurrentHItPoint = 0;
+	public int CurrentHitPoint = 0;
+	public int CurrentShieldPoint = 0;
 
 	public Enemy(EnemyBase ebase){
 		this.ebase = ebase;
-		this.CurrentHItPoint = ebase.EnemyHitPoint;
+		this.CurrentHitPoint = ebase.EnemyHitPoint;
 	}
 }

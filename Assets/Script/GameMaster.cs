@@ -8,13 +8,16 @@ using System.Linq;
 public class GameMaster: MonoBehaviour{
 
 	public GameObject Damage_Obj, Effect_Obj, Reward_Obj, Bubble_Obj;
-	public Transform Status_Trans, Player_Trans, Enemy_Trans, DropContainer_Trans, Buttle_Trans;
+	public Transform Status_Trans, Player_Trans, Enemy_Trans, DropContainer_Trans, Buttle_Trans, BlackTurn_Trans, Thunder_Trans;
 	public Transform HP_Bar, ExpBar;
+
+	public Sprite Boss_Sprite;
 
 	public List<ItemSchema> ItemSchema_List;
 	public ItemSchema Key_ItemSchema;
-	public List<EnemyBase> Enemy_List;
 	public StageMaster stageMaster;
+
+	public EnemyBase FireDragon_EB;
 
 	private int Floor = 0;
 	private int CurrentEnemyIndex = 0;
@@ -28,7 +31,7 @@ public class GameMaster: MonoBehaviour{
 	private Coroutine Cronus_Routine = null;
 	private Coroutine EnemyCronus_Routine = null;
 	private List<GameObject> DeleteResearvedObjects = new List<GameObject>();
-	private List<bool> BossKey_flags = new List<bool>();
+	private List<DragItem> BossKey_flags = new List<DragItem>(){null, null, null};
 
 	private List<int> ATK_table = new List<int>(){1,3,7,15};
 	private List<int> DEF_table = new List<int>(){1,3,7,15};
@@ -39,7 +42,8 @@ public class GameMaster: MonoBehaviour{
 		PlayerCurrentHitPoint = PlayerHitPoint;
 		HP_Bar.Find("Current").GetComponent<Image>().fillAmount = (float)PlayerCurrentHitPoint / PlayerHitPoint;
 
-		EnemyAppear();
+		// EnemyAppear();
+		StartCoroutine(FireDragonAppear());
 	}
 
 	public void Debug_LevelExp(){
@@ -83,20 +87,62 @@ public class GameMaster: MonoBehaviour{
 
 			// collect 3 gems to summon deamon king
 			if(ditem._schema.ItemSchema_name == "KeyItem"){
-				BossKey_flags[ditem._level] = true;
-				if(!BossKey_flags.Exists(x => x == false)){
-					BossAppear();
+				BossKey_flags[ditem._level] = ditem;
+				if(!BossKey_flags.Exists(x => x == null)){
+					StartCoroutine(BossAppear());
 				}
 			}
 		}
 	}
 
-	public void BossAppear(){
+	
+	public IEnumerator BossAppear(){
+		if(Cronus_Routine != null) StopCoroutine(Cronus_Routine); 
+		if(EnemyCronus_Routine != null) StopCoroutine(EnemyCronus_Routine);
 
+		// black turn
+		BlackTurn_Trans.GetComponent<CanvasGroup>().alpha = 0;
+		BlackTurn_Trans.gameObject.SetActive(true);
+		BlackTurn_Trans.GetComponent<CanvasGroup>().DOFade(1, 1.0f);
+
+		yield return new WaitForSeconds(1.5f);
+
+		// gem
+		List<Vector2> GemPoint = new List<Vector2>(){
+			new Vector2(1345f, 159f),
+			new Vector2(1545f, 289f),
+			new Vector2(1745f, 159f)
+		};
+		for(int i=0; i<3; i++){
+			DragItem di = BossKey_flags[i];
+			di.isCollisionEnable = false;
+			di.transform.DOLocalMove(GemPoint[i], 2.0f);
+			di.transform.GetComponent<Rigidbody2D>().simulated = false;
+		}
+
+		yield return new WaitForSeconds(1.5f);
+
+		foreach(DragItem bosskey in BossKey_flags){
+			Destroy(bosskey.gameObject);
+		}
+
+		// effect
+		Thunder_Trans.gameObject.SetActive(true);
+		Enemy_Trans.localPosition = new Vector2(135f, -100f);
+		Enemy_Trans.GetComponent<Image>().sprite = Boss_Sprite;
+		BlackTurn_Trans.GetComponent<CanvasGroup>().DOFade(0, 0.5f);
+
+		yield return new WaitForSeconds(0.5f);
+
+		Thunder_Trans.gameObject.SetActive(false);
+
+		print("BossAppear");
 	}
 
 	public void EnemyAppear(){
 		Floor++;
+
+		EnemyDiscard();
 
 		Enemy_Trans.gameObject.SetActive(true);
 		Enemy_Trans.DOLocalMoveX(335f, 0.5f);
@@ -108,12 +154,19 @@ public class GameMaster: MonoBehaviour{
 
 		StageGroup group = stageMaster.group[Mathf.FloorToInt(Floor / 5f)];
 		EnemyInstance = new Enemy(group.enemies[Random.Range(0, group.enemies.Count)]);
-		// EnemyInstance = new Enemy(Enemy_List[CurrentEnemyIndex]);
 		Enemy_Trans.GetComponent<Image>().sprite = EnemyInstance.ebase.EnemySprite;
-		Enemy_Trans.Find("HPBar/Current").GetComponent<Image>().fillAmount = (float)EnemyInstance.CurrentHItPoint / EnemyInstance.ebase.EnemyHitPoint;
+		Enemy_Trans.Find("HPBar/Current").GetComponent<Image>().fillAmount = (float)EnemyInstance.CurrentHitPoint / EnemyInstance.ebase.EnemyHitPoint;
 
 		Cronus_Routine = StartCoroutine(Cronus());
 		// EnemyCronus_Routine = StartCoroutine(EnemyCronus());
+	}
+
+	/// <summary>
+	/// Initializa Enemy
+	/// </summary>
+	public void EnemyDiscard(){
+		Enemy_Trans.Find("Shield").gameObject.SetActive(false);
+		Enemy_Trans.Find("SkillName").gameObject.SetActive(false);
 	}
 
 	public IEnumerator EnemyCronus(){
@@ -134,6 +187,62 @@ public class GameMaster: MonoBehaviour{
 			PlayerCurrentHitPoint -= EnemyInstance.ebase.EnemyAttack;
 			HP_Bar.Find("Current").GetComponent<Image>().fillAmount = (float)PlayerCurrentHitPoint / PlayerHitPoint;
 		}
+	}
+
+	public IEnumerator FireDragonAppear(){
+		EnemyInstance = new Enemy(FireDragon_EB);
+		Enemy_Trans.GetComponent<Image>().sprite = EnemyInstance.ebase.EnemySprite;
+
+		// initial position
+		EnemyDiscard();
+		Enemy_Trans.localPosition = new Vector2(900f, -420f);
+
+		// forward
+		Enemy_Trans.gameObject.SetActive(true);
+		Enemy_Trans.DOLocalMove(new Vector3(335f, -300f), 0.5f);
+
+		yield return new WaitForSeconds(0.5f);
+
+		Sequence evitation = DOTween.Sequence();
+		evitation.Append(Enemy_Trans.DOLocalMoveY(-350f, 1.0f));
+		evitation.Append(Enemy_Trans.DOLocalMoveY(-300f, 1.0f));
+		evitation.SetLoops(-1);
+		evitation.SetLink(Enemy_Trans.gameObject);
+
+		EnemyCronus_Routine = StartCoroutine(FireDragonCronus());
+	}
+
+	public IEnumerator FireDragonCronus(){
+		int routine_index = 0;
+
+		while(true){
+			yield return new WaitForSeconds(EnemyInstance.ebase.EnemySpeed / 150f);
+
+			// 英傑の歌
+			if(EnemyInstance.CurrentShieldPoint <= 0){
+				AddEffect_Sheild(300);
+			}
+
+			switch(routine_index){
+				case 1:
+					break;
+			}
+		}
+	}
+
+	public void AddEffect_Sheild(int value, string skillname = "シールド"){
+		SkillName_View(skillname);
+		EnemyInstance.CurrentShieldPoint = value;
+		Enemy_Trans.Find("Shield").gameObject.SetActive(true);
+	}
+
+	public void SkillName_View(string text){
+		Enemy_Trans.Find("SkillName").GetComponentInChildren<Text>().text = text;
+		Enemy_Trans.Find("SkillName").gameObject.SetActive(true);
+
+		DOVirtual.DelayedCall(1.0f, ()=>{
+			Enemy_Trans.Find("SkillName").gameObject.SetActive(false);
+		});
 	}
 
 	/// <summary>
@@ -172,13 +281,13 @@ public class GameMaster: MonoBehaviour{
 
 			// proc:: damage calc
 			int damage = Attack;
-			EnemyInstance.CurrentHItPoint -= damage;
+			EnemyInstance.CurrentHitPoint -= damage;
 			StartCoroutine(Anim_Damaging(damage));
 
-			Enemy_Trans.Find("HPBar/Current").GetComponent<Image>().fillAmount = (float)EnemyInstance.CurrentHItPoint / EnemyInstance.ebase.EnemyHitPoint;
+			Enemy_Trans.Find("HPBar/Current").GetComponent<Image>().fillAmount = (float)EnemyInstance.CurrentHitPoint / EnemyInstance.ebase.EnemyHitPoint;
 			
 			// judge dead
-			if(EnemyInstance.CurrentHItPoint <= 0){
+			if(EnemyInstance.CurrentHitPoint <= 0){
 				yield return new WaitForSeconds(1.0f);
 
 				// StopCoroutine(EnemyCronus_Routine);
@@ -221,10 +330,15 @@ public class GameMaster: MonoBehaviour{
 			ItemSchema schema = null;
 			int level = 0; 
 			bool isKey = false;
-			if(Floor > 5 && Random.Range(0, 80) == 0){
+			if(Floor > 0 && Random.Range(0, 10) < 9){
 				schema = Key_ItemSchema;
-				level = Random.Range(0, 3);
-				// if player get the gem
+
+				// if player get the gem already
+				List<int> lot = new List<int>();
+				for(int j=0; j<3; j++){
+					if(!BossKey_flags[j]) lot.Add(j);
+				}
+				level = lot[Random.Range(0, lot.Count)];
 
 				isKey = true;
 			}else{

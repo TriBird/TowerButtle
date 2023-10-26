@@ -13,9 +13,9 @@ public class DragItem: MonoBehaviour, IDragHandler, IEndDragHandler, IBeginDragH
 	public ItemSchema _schema;
 	public int _level = 1;
 	public bool isDropEnable = false;
+	public bool isCollisionEnable = true;
 
 	private bool isMergeEnable = true;
-	private bool isCollisionEnable = true;
 	private Transform LastTriggered_Trans = null;
 	private Vector3 beforeDragPosition = new Vector3();
 
