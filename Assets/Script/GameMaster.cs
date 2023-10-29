@@ -169,23 +169,31 @@ public class GameMaster: MonoBehaviour{
 		Enemy_Trans.Find("SkillName").gameObject.SetActive(false);
 	}
 
+	public void AttackMotion(){
+		Vector2 pos = Enemy_Trans.localPosition;
+		Sequence sequence = DOTween.Sequence();
+		sequence.Append(Enemy_Trans.DOLocalMoveX(pos.x-50f, 0.2f));
+		sequence.Append(Enemy_Trans.DOLocalMoveX(pos.x, 0.1f));
+		sequence.SetLink(Enemy_Trans.gameObject);
+	}
+
+	public void Enemy_NormalAttack(){
+		AttackMotion();
+
+		GameObject damage_txt = Instantiate(Damage_Obj, Buttle_Trans);
+		damage_txt.GetComponent<DamageCtrl>().master = this;
+		damage_txt.transform.localPosition = Player_Trans.localPosition;
+		damage_txt.GetComponent<DamageCtrl>().DamegeText = EnemyInstance.ebase.EnemyAttack.ToString();
+
+		PlayerCurrentHitPoint -= EnemyInstance.ebase.EnemyAttack;
+		HP_Bar.Find("Current").GetComponent<Image>().fillAmount = (float)PlayerCurrentHitPoint / PlayerHitPoint;
+	}
+
 	public IEnumerator EnemyCronus(){
 		while(true){
 			yield return new WaitForSeconds(EnemyInstance.ebase.EnemySpeed / 150f);
 
-			Vector2 pos = Enemy_Trans.localPosition;
-			Sequence sequence = DOTween.Sequence();
-			sequence.Append(Enemy_Trans.DOLocalMoveX(pos.x-50f, 0.2f));
-			sequence.Append(Enemy_Trans.DOLocalMoveX(pos.x, 0.1f));
-
-			//enemy attack
-			GameObject damage_txt = Instantiate(Damage_Obj, Buttle_Trans);
-			damage_txt.GetComponent<DamageCtrl>().master = this;
-			damage_txt.transform.localPosition = Player_Trans.localPosition;
-			damage_txt.GetComponent<DamageCtrl>().DamegeText = EnemyInstance.ebase.EnemyAttack.ToString();
-
-			PlayerCurrentHitPoint -= EnemyInstance.ebase.EnemyAttack;
-			HP_Bar.Find("Current").GetComponent<Image>().fillAmount = (float)PlayerCurrentHitPoint / PlayerHitPoint;
+			Enemy_NormalAttack();
 		}
 	}
 
@@ -222,10 +230,26 @@ public class GameMaster: MonoBehaviour{
 			// 英傑の歌
 			if(EnemyInstance.CurrentShieldPoint <= 0){
 				AddEffect_Sheild(1000);
+				continue;
 			}
 
 			switch(routine_index){
+				case 0: // 通常
+				case 2:
+					Enemy_NormalAttack();
+					break;
 				case 1:
+					SkillName_View("炎牙");
+					
+					break;
+				case 3:
+					SkillName_View("蒼炎");
+					break;
+				case 4:
+					SkillName_View("咆哮");
+					break;
+				case 5:
+					SkillName_View("ラスト・リベンジ");
 					break;
 			}
 		}
