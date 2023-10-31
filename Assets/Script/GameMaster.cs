@@ -177,15 +177,15 @@ public class GameMaster: MonoBehaviour{
 		sequence.SetLink(Enemy_Trans.gameObject);
 	}
 
-	public void Enemy_NormalAttack(){
+	public void Enemy_NormalAttack(int damage){
 		AttackMotion();
 
 		GameObject damage_txt = Instantiate(Damage_Obj, Buttle_Trans);
 		damage_txt.GetComponent<DamageCtrl>().master = this;
 		damage_txt.transform.localPosition = Player_Trans.localPosition;
-		damage_txt.GetComponent<DamageCtrl>().DamegeText = EnemyInstance.ebase.EnemyAttack.ToString();
+		damage_txt.GetComponent<DamageCtrl>().DamegeText = damage.ToString();
 
-		PlayerCurrentHitPoint -= EnemyInstance.ebase.EnemyAttack;
+		PlayerCurrentHitPoint -= damage;
 		HP_Bar.Find("Current").GetComponent<Image>().fillAmount = (float)PlayerCurrentHitPoint / PlayerHitPoint;
 	}
 
@@ -193,7 +193,7 @@ public class GameMaster: MonoBehaviour{
 		while(true){
 			yield return new WaitForSeconds(EnemyInstance.ebase.EnemySpeed / 150f);
 
-			Enemy_NormalAttack();
+			Enemy_NormalAttack(EnemyInstance.ebase.EnemyAttack);
 		}
 	}
 
@@ -236,7 +236,7 @@ public class GameMaster: MonoBehaviour{
 			switch(routine_index){
 				case 0: // 通常
 				case 2:
-					Enemy_NormalAttack();
+					Enemy_NormalAttack(EnemyInstance.ebase.EnemyAttack);
 					break;
 				case 1:
 					SkillName_View("炎牙");
@@ -244,14 +244,20 @@ public class GameMaster: MonoBehaviour{
 					break;
 				case 3:
 					SkillName_View("蒼炎");
+					Enemy_NormalAttack(EnemyInstance.ebase.EnemyAttack*2);
 					break;
 				case 4:
-					SkillName_View("咆哮");
+					SkillName_View("ほうこう");
+					Buttle_Trans.DOShakePosition(0.5f, 50, 50);
 					break;
 				case 5:
 					SkillName_View("ラスト・リベンジ");
+					Enemy_NormalAttack(EnemyInstance.ebase.EnemyAttack*4);
+					routine_index = 0;
 					break;
 			}
+
+			routine_index++;
 		}
 	}
 

@@ -16,5 +16,5 @@ MonoBehaviour:
   EnemySprite: {fileID: 21300000, guid: 624aa0d877aae6e4c962f015cd4cb2d4, type: 3}
   EnemyHitPoint: 5000
   EnemyAttack: 25
-  EnemySpeed: 70
+  EnemySpeed: 300
   EnemyExp: 5000
